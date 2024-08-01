@@ -1,0 +1,28 @@
+materials:
+  - name: wall
+    source: [0, 0, 0]
+    display: [128, 64, 0]
+    prompt: a bedroom wall with flower wallpaper
+    height: 30
+  - name: bed
+    source: [255, 0, 0]
+    prompt: a large bed with a red silk sheets
+    height: 5
+  - name: door
+    source: [23, 255, 0]
+    prompt: a wooden door with a brass handle
+    height: 30
+  - name: window
+    source: [0, 75, 255]
+    prompt: a large window with a view of the garden
+    height: 30
+  - name: floor
+    source: [-1, -1, -1]
+    display: [128, 128, 128]
+    prompt: a wooden floor
+    height: 1
+  - name: ceiling
+    source: [-1, -1, -1]
+    display: [255, 255, 255]
+    prompt: a painted ceiling
+    height: 1

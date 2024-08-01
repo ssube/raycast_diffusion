@@ -1,0 +1,31 @@
+[project]
+name = "rcd"
+version = "0.0.1"
+description = "Raycast Diffusion"
+authors = [{name = "ssube", email = "seansube@gmail.com"}]
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools]
+packages = ["rcd"]
+
+[tool.black]
+force-exclude = '''/(diffusion_original|lpw).py'''
+
+[tool.isort]
+profile = "black"
+force_to_top = ".logging"
+skip_glob = ["*/lpw.py"]
+
+[tool.mypy]
+# ignore_missing_imports = true
+exclude = []
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true

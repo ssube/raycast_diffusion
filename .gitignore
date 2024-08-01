@@ -1,0 +1,16 @@
+__pycache__/
+dist/
+venv/
+*.egg-info/
+
+*.log
+*.swp
+
+.coverage
+coverage.xml
+
+profile_output.*
+profile_output_*
+
+/*.npy
+/*.png

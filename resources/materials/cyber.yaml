@@ -1,0 +1,51 @@
+materials:
+  - name: wall
+    source: [0, 0, 0]
+    display: [128, 64, 0]
+    prompt: >-
+      cyberpunk wall with neon graffiti, embedded LED screens, futuristic metallic panels, illuminated by glowing
+      holographic advertisements, vibrant streetlights, highly detailed, wear and tear, exposed circuits and wires,
+      dark, gritty tones contrasted with bright neon lights, bustling, high-tech urban environment with clear lighting,
+      sharp details, High quality, ultra-realistic, 4K resolution
+    height: 30
+  - name: bed
+    source: [255, 0, 0]
+    prompt: >-
+      cyberpunk coffee table, sleek, futuristic design, reinforced glass with embedded neon blue and purple
+      lights, glowing grid pattern, integrated digital touch screens and holographic displays, projected floating images
+      and data, metallic table legs, exposed circuitry, tiny LED lights, high-tech aesthetic, finely detailed, sharp
+      details and vibrant colors, High quality, ultra-realistic, 4K resolution
+    height: 5
+  - name: door
+    source: [23, 255, 0]
+    prompt: >-
+      cyberpunk doorway, reinforced metallic frame, neon lights, digital displays, sleek metal and opaque glass,
+      intricate patterns, glowing circuitry, futuristic signage, small robotic guards, highly detailed textures, clear
+      lighting, sharp edges, vibrant colors, leads into high-tech bustling cityscape, high quality, ultra-realistic, 4K
+      resolution
+    height: 30
+  - name: window
+    source: [0, 75, 255]
+    prompt: >-
+      cyberpunk window, transparent holographic display overlay, real-time data, advertisements, futuristic alloy
+      frame, neon blue and green lights, slightly tinted glass, reflecting city’s bright neon lights, view of high-tech
+      urban landscape, towering skyscrapers, flying vehicles, clear lighting, sharp details, ultra-realistic, 4K
+      resolution
+    height: 30
+  - name: floor
+    source: [-1, -1, -1]
+    display: [128, 128, 128]
+    prompt: >-
+      cyberpunk floor, reinforced glass panels, neon lights, glowing grid pattern, metallic sections, embedded
+      circuits, reflecting ambient light, highly detailed textures, slight wear and tear, illuminated by vibrant colors,
+      striking contrast, darker surroundings, futuristic high-tech environment, sharp details, ultra-realistic, 4K
+      resolution
+    height: 1
+  - name: ceiling
+    source: [-1, -1, -1]
+    display: [255, 255, 255]
+    prompt: >-
+      cyberpunk ceiling, integrated neon lights, exposed industrial piping, sleek metal panels, translucent
+      sections, soft blue and purple hues, embedded speakers, holographic projectors, highly detailed textures, clear
+      lighting, intricate designs, vibrant colors, high-tech urban feel, sharp details, ultra-realistic, 4K resolution
+    height: 1

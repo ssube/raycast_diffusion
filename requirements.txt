@@ -1,0 +1,12 @@
+compel
+diffusers
+numpy
+open3d
+opencv-python
+pillow
+pydantic
+PyYAML
+safetensors
+torch
+torchvision
+transformers

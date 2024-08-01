@@ -1,0 +1,61 @@
+materials:
+  - name: wall
+    source: [0, 0, 0]
+    display: [128, 64, 0]
+    prompt: |-
+      panorama of a modern city skyline, miniature, tilt shift, (shiny:0.7), (sophisticated:0.8), (crystalized:0.8),
+      (intricate:0.9), (ornate:0.6), (foreboding:0.2), (mystical:0.5), (fantasy:0.5), (digital painting:0.9),
+      (smooth:0.8), (sharp focus:0.8), (oil painting:0.9), (complementary colors:0.7),
+      (sharp focus:0.4) ::0.8), (perfect lighting:0.4), (reflection:0.4), (ray tracing:1.0)
+    height: 30
+  - name: bed
+    source: [255, 0, 0]
+    prompt: |-
+      top down view of a diorama of a battlefield, masterpiece, best quality, highly detailed, professional color
+      grading, film grain, atmosphere, wondrous,8k resolution, hyper realistic, high quality, HD, Sharp focus, hdr,
+      realistic, dramatic, dark, realistic lighting, Highly detailed, harsh lighting, intricate detail, masterpiece,
+      best quality, hyper-detailed, highly detailed, intense detail, sharp focus, rim lighting, intricate details,
+      cinema style, realistic, triadic colors, cropped, very detailed, detailed skin, SHARP, glitter, 3D, colorful,
+      shiny, (retro:2), (futurism:1.5), ( STM:1.3), anime, marvel, artstation, concept art, smooth, sharp focus,
+      illustration, art by kentaro miura,color
+    height: 5
+  - name: door
+    source: [23, 255, 0]
+    prompt: |-
+      glowing cyberpunk tower building, city skyline, panorama, tilt shift, beautiful sunset, reflections, light rays,
+      8k, bokeh, sharp, a futuristic cyberpunk building with a green tower and a green tower, clouds, digital art, soft
+      light, trending on artstation, (masterpiece, best quality:1.5), landscape, (coral cliff:1.3), starry sky, detailed
+      background, neon signs, neon lighting, (high contrast:1.1) city, futuristic skyscrapers, sci-fi buildings, rainy
+      weather, (rain, water rain:1.2), heavy rain, water drop, depth of field, (masterpiece, best quality:1.5) cloudy
+      sky, cloud, sky, (clouds:1.3), night, (rainy, wet ground: 1.5)
+    height: 30
+  - name: window
+    source: [0, 75, 255]
+    prompt: |-
+      alien invasion, city skyline, panorama, tilt shift photography, trending on artstation, 8k, detailed, high
+      quality, sharp focus, ultra realistic, 3D rendered, high resolution, high contrast, unreal engine 5, cinematic
+      lighting, 8K HD, artstation HQ, deviantart, pinterest, intricate, highly detailed, digital painting, artstation,
+      concept art, smooth, sharp focus, illustration, art by artgerm and greg rutkowski and alphonse mucha, 8K, unreal
+      engine. High quality image. Highly detailed.. Extremely high-resolution details, photographic, realism pushed to
+      extreme, fine texture, incredibly lifelike, high quality photography, 4k, Canon EOS R3, hdr, smooth, sharp focus,
+      high resolution, award winning photo, 80mm, f2.8, bokeh
+    height: 30
+  - name: floor
+    source: [-1, -1, -1]
+    display: [128, 128, 128]
+    prompt: |-
+      top down modern city diorama, tilt shift miniature, a small island with a house and trees, photorealistic, 8k
+      octane render, HDR, trending on artstation, hyper detailed, high quality, sharp focus, octane render, unreal
+      engine 5, 4k, 8k, (masterpiece:1.2), best quality, (hyperdetailed, highest detailed:1.2), high resolution
+      textures, (masterpiece:1.2), best quality, (hyperdetailed, highest detailed:1.2)
+    height: 1
+  - name: ceiling
+    source: [-1, -1, -1]
+    display: [255, 255, 255]
+    prompt: |-
+      dark sky, alien invasion, thick clouds, red and yellow clouds, large space eclipse, extreme detail, fantasy
+      quality, masterpiece, raytracing, 4k, high definition, trending on artstation, unreal engine 5, ultra quality, hd,
+      8k, realistic, sharp focus, realistic texture, cinematic lighting, high contrast, dark atmosphere, wallpaper,
+      cinematic, red and black and white colors only, massive, cosmic, wide shot, low angle view, from below shot, wide
+      angle lens, in the style of pallette knife
+    height: 1

@@ -1,0 +1,52 @@
+materials:
+  - name: wall
+    source: [0, 0, 0]
+    display: [128, 64, 0]
+    prompt: |-
+      distant jungle, nature, dappled sunlight, sunbeam, cherry blossom, cinematic lighting, masterpiece, best quality
+      4k HDR high resolution realistic photograph, beach, sunlight, beach background
+    height: 30
+  - name: bed
+    source: [255, 0, 0]
+    prompt: |-
+      city skyline background with city lights and neons, skyscrapers, neons, bladerunner2049, cyberpunk, dark, gritty,
+      rainy, neon lights, fog, dramatic lighting, cinematic, photo realistic, detailed, 8k, hyperrealistic, octane
+      render, unreal engine, HDR, (hyperdetailed:1.15), (realistic lighting:1.1), (realistic shadows:1.1), ((best
+      quality)), (detailed), 8k uhd, Nikon 70d, ISO200
+    height: 5
+  - name: door
+    source: [23, 255, 0]
+    prompt: |-
+      portal to another dimension, beautiful landscape, fantasy, flowers, vines, flowers around, dramatic lighting,
+      intricate details, by Yoshitaka Amano, by HR Giger, by Beksinski, highly detailed, 4k, (realistic) high quality
+      RAW photo shot on Hasselblad X2D 100C, (best quality), (masterpiece), (ultra-detailed), (hyperrealism:1.2),
+      (hyperrealistic), (photorealistic:1.2), 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, sharp
+      focus, F/8.0, HDR
+    height: 30
+  - name: window
+    source: [0, 75, 255]
+    prompt: |-
+      the ocean, surfing, detailed, (bokeh:0.8) (professional
+      photograph:0.75), (4k ultra detailed), ultra realistic, best quality, subsurface scattering, volumetric lighting,
+      highrez, masterpiece, best quality, perfect lighting, detailed background,
+      intricate sharp details, ultra high res,
+    height: 25
+  - name: floor
+    source: [-1, -1, -1]
+    display: [128, 128, 128]
+    prompt: |-
+      grass, leaves, garden, outdoors, light rays, lens flare, depth of field, bokeh, chromatic aberration, light
+      particles, light rays, lens flare, (watercolor:0.8), abstract,
+      colorful, windy, floating petals, (wind:1.2) trees, floating leaves, floating petals, abstract
+      background, flower,
+    height: 1
+  - name: ceiling
+    source: [-1, -1, -1]
+    display: [255, 255, 255]
+    prompt: |-
+      floating clouds, sunbeam, ichor, tentacle, (masterpiece:1.2), best quality, (intricate details), eldritch, glow,
+      glowing eyes, horror, misty, ectoplasm, translucent, volumetric lighting, unique pose, dynamic pose, dutch angle,
+      35mm, anamorphic, lightroom, cinematography, film grain, HDR10, 8k hdr, Steve McCurry, ((cinematic)), RAW, color
+      graded portra 400 film, remarkable color, raytracing, subsurface scattering, hyperrealistic, deep shadows,
+      contrast, dark theme, (cinematic dark lighting), professional photography, depth of field, sharp focus
+    height: 1
