@@ -427,6 +427,15 @@ class MultiDiffusionXLImg2Img(StableDiffusionXLControlNetImg2ImgPipeline):
         count = torch.zeros_like(latents)
         value = torch.zeros_like(latents)
 
+        # Create a scheduler for each view to allow for different internal state
+        view_schedulers = [
+            self.scheduler.__class__.from_config(self.scheduler.config)
+            for _ in range(len(views))
+        ]
+
+        for scheduler in view_schedulers:
+            scheduler.set_timesteps(total_time_steps, device=device)
+
         # preparations for diff diff
         # if original_image is not None:
         #     original_with_noise = latents.clone()
@@ -460,7 +469,7 @@ class MultiDiffusionXLImg2Img(StableDiffusionXLControlNetImg2ImgPipeline):
                     if result is not None:
                         latents = result
 
-                for h_start, h_end, w_start, w_end in views:
+                for vi, (h_start, h_end, w_start, w_end) in enumerate(views):
                     masks_view = masks[:, :, h_start:h_end, w_start:w_end]
                     latent_view = latents[:1, :, h_start:h_end, w_start:w_end].repeat(
                         batch_size, 1, 1, 1
@@ -470,10 +479,10 @@ class MultiDiffusionXLImg2Img(StableDiffusionXLControlNetImg2ImgPipeline):
                         bg = bootstrapping_backgrounds[
                             torch.randint(0, bootstrapping, (batch_size - 1,))
                         ]
-                        bg = self.scheduler.add_noise(
+                        bg = view_schedulers[vi].add_noise(
                             bg[:, :, h_start:h_end, w_start:w_end],
                             bg_noise[:, :, h_start:h_end, w_start:w_end],
-                            t,
+                            torch.tensor([t]),
                         )
                         masks_view = masks_view * (1 - strength)
                         latent_view[1:] = latent_view[1:] * masks_view[1:] + bg * (
@@ -486,7 +495,7 @@ class MultiDiffusionXLImg2Img(StableDiffusionXLControlNetImg2ImgPipeline):
                         if self.do_classifier_free_guidance
                         else latent_view
                     )
-                    latent_model_input = self.scheduler.scale_model_input(
+                    latent_model_input = view_schedulers[vi].scale_model_input(
                         latent_model_input, t
                     )
 
@@ -499,7 +508,7 @@ class MultiDiffusionXLImg2Img(StableDiffusionXLControlNetImg2ImgPipeline):
                     if guess_mode and self.do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
                         control_model_input = latent_view
-                        control_model_input = self.scheduler.scale_model_input(
+                        control_model_input = view_schedulers[vi].scale_model_input(
                             control_model_input, t
                         )
                         controlnet_prompt_embeds = prompt_embeds.chunk(2)[1]
@@ -580,7 +589,7 @@ class MultiDiffusionXLImg2Img(StableDiffusionXLControlNetImg2ImgPipeline):
                         )
 
                     # compute the previous noisy sample x_t -> x_t-1
-                    latent_view_denoised = self.scheduler.step(
+                    latent_view_denoised = view_schedulers[vi].step(
                         noise_pred,
                         t,
                         latent_view,

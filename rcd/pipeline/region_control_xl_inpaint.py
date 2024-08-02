@@ -611,6 +611,7 @@ class MultiDiffusionXLInpaint(StableDiffusionXLControlNetInpaintPipeline):
         # end diff diff preparations
 
         self._num_timesteps = len(timesteps)
+        # print("num timesteps: ", self._num_timesteps, timesteps)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
                 if i < skip_initial_steps:
@@ -651,8 +652,11 @@ class MultiDiffusionXLInpaint(StableDiffusionXLControlNetInpaintPipeline):
                         bg = bootstrapping_backgrounds[
                             torch.randint(0, bootstrapping, (batch_size - 1,))
                         ]
+                        # print(bg.shape, bg_noise[:, :, h_start:h_end, w_start:w_end].shape, t.shape)
                         bg = self.scheduler.add_noise(
-                            bg, bg_noise[:, :, h_start:h_end, w_start:w_end], t
+                            bg,
+                            bg_noise[:, :, h_start:h_end, w_start:w_end],
+                            torch.tensor([t]),
                         )
                         latent_view[1:] = latent_view[1:] * masks_view[1:] + bg * (
                             1 - masks_view[1:]
