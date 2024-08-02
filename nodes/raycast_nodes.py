@@ -627,6 +627,28 @@ class LoadCompilePipeline:
                 "sdxl": ([True, False], {}),
                 "tiny_vae": ([False, True], {}),
                 "xformers": ([False, True], {}),
+                "scheduler": (
+                    [
+                        "ddim",
+                        "deis",
+                        "dpm++2m",
+                        "dpm++2m-karras",
+                        "dpm++2m-sde",
+                        "dpm++2m-sde-karras",
+                        "dpm++sde",
+                        "dpm++sde-karras",
+                        "dpm2",
+                        "dpm2-karras",
+                        "euler",
+                        "euler-ancestral",
+                        "heun",
+                        "lcm",
+                        "lms",
+                        "lms-karras",
+                        "uni-pc",
+                    ],
+                    {"default": "ddim"},
+                ),
             },
         }
 
@@ -637,11 +659,27 @@ class LoadCompilePipeline:
     CATEGORY = "raycast_diffusion/pipelines"
 
     def load_compile_pipeline(
-        self, checkpoint, compiler, optimize, quantize, sdxl, tiny_vae, xformers
+        self,
+        checkpoint,
+        compiler,
+        optimize,
+        quantize,
+        sdxl,
+        tiny_vae,
+        xformers,
+        scheduler,
     ):
         ckpt_path = folder_paths.get_full_path("checkpoints", checkpoint)
         pipeline = load_sd(
-            ckpt_path, compiler, False, optimize, quantize, sdxl, tiny_vae, xformers
+            ckpt_path,
+            compiler,
+            False,
+            optimize,
+            quantize,
+            sdxl,
+            tiny_vae,
+            xformers,
+            scheduler,
         )
         return {"result": [pipeline], "ui": {"pipeline": []}}
 

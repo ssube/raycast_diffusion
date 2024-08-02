@@ -10,7 +10,21 @@ import numpy as np
 import open3d as o3d
 import torch
 from compel import Compel, ReturnedEmbeddingsType
-from diffusers import AutoencoderTiny, ControlNetModel, DDIMScheduler
+from diffusers import (
+    AutoencoderTiny,
+    ControlNetModel,
+    DDIMScheduler,
+    DEISMultistepScheduler,
+    DPMSolverMultistepScheduler,
+    DPMSolverSinglestepScheduler,
+    EulerAncestralDiscreteScheduler,
+    EulerDiscreteScheduler,
+    HeunDiscreteScheduler,
+    KDPM2DiscreteScheduler,
+    LCMScheduler,
+    LMSDiscreteScheduler,
+    UniPCMultistepScheduler,
+)
 from diffusers.image_processor import VaeImageProcessor
 from PIL import Image
 from yaml import Loader, load
@@ -857,6 +871,7 @@ def load_sd(
     sdxl: bool = False,
     tiny_vae: bool = True,
     xformers: bool = False,
+    scheduler: str = "ddim",
 ) -> Callable:
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     logger.info("loading checkpoint %s to device %s", checkpoint, device)
@@ -884,7 +899,38 @@ def load_sd(
         # sd.vae = vae
         sd = sd.to(device)
 
-    sd.scheduler = DDIMScheduler.from_config(sd.scheduler.config)
+    SCHEDULER_TYPES = {
+        "ddim": (DDIMScheduler, {}),
+        "dpm++2m": (DPMSolverMultistepScheduler, {}),
+        "dpm++2m-karras": (DPMSolverMultistepScheduler, {"use_karras_sigmas": True}),
+        "dpm++2m-sde": (
+            DPMSolverMultistepScheduler,
+            {"algorithm_type": "sde-dpmsolver++"},
+        ),
+        "dpm++2m-sde-karras": (
+            DPMSolverMultistepScheduler,
+            {"algorithm_type": "sde-dpmsolver++", "use_karras_sigmas": True},
+        ),
+        "dpm++sde": (DPMSolverSinglestepScheduler, {}),
+        "dpm++sde-karras": (DPMSolverSinglestepScheduler, {"use_karras_sigmas": True}),
+        "dpm2": (KDPM2DiscreteScheduler, {}),
+        "dpm2-karras": (KDPM2DiscreteScheduler, {"use_karras_sigmas": True}),
+        "euler": (EulerDiscreteScheduler, {}),
+        "euler-ancestral": (EulerAncestralDiscreteScheduler, {}),
+        "heun": (HeunDiscreteScheduler, {}),
+        "lcm": (LCMScheduler, {}),
+        "lms": (LMSDiscreteScheduler, {}),
+        "lms-karras": (LMSDiscreteScheduler, {"use_karras_sigmas": True}),
+        "deis": (DEISMultistepScheduler, {}),
+        "uni-pc": (UniPCMultistepScheduler, {}),
+    }
+
+    scheduler = scheduler.lower()
+    if scheduler not in SCHEDULER_TYPES:
+        raise ValueError(f"unknown scheduler type: {scheduler}")
+
+    scheduler_class, scheduler_args = SCHEDULER_TYPES[scheduler]
+    sd.scheduler = scheduler_class.from_config(sd.scheduler.config, **scheduler_args)
 
     if tiny_vae:
         logger.warning("using tiny VAE")
