@@ -1,6 +1,6 @@
 # Raycast Diffusion
 
-> Making Stable Diffusion persistent stable in 3D spaces
+> Making Stable Diffusion persistently stable in 3D spaces
 
 This is an effort to make Stable Diffusion's output stable in a 3D space, using a persistent latent-space volume to
 store partially diffused latents and using them to guide future diffusion paths using a combination of MultiDiffusion,
@@ -55,7 +55,7 @@ and differential diffusion for soft inpainting with latent guidance.
 
 ### Problems
 
-There are two main problems with storing latents in a 3D space:
+There are two main problems with storing latent texels in a 3D voxel space:
 
 1. The latent output contains structural data, some of which depends on neighboring pixels. Mis-aligning those texels
    will result in fragmented line segments and other artifacts. These can be partially repaired using additional diffusion
