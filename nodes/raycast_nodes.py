@@ -792,6 +792,8 @@ class LoadModelGeometry:
         elif model == "monkey":
             monkey_mesh = o3d.data.MonkeyModel()
             mesh = o3d.io.read_triangle_mesh(monkey_mesh.path)
+        else:
+            mesh = o3d.io.read_triangle_mesh(model)
 
         mesh.compute_vertex_normals()
 
