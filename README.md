@@ -45,13 +45,17 @@ assigned to regions of the diffused image using the projected materials, using t
 MultiDiffusion. The entire diffusion process is guided by the depth ControlNet, using the pixel depth from the 3D
 projection.
 
-The output of the diffusion model's UNet is captured at the final step or an earlier, intermediate step, and stored
-in a 3D volume. The latent voxels are projected into screen space for diffusion, then reprojected back into the 3D
-space.
+The denoised output samples from the last layer of diffusion model's UNet are captured after the final timestep or an
+earlier, intermediate step, and stored in a 3D volume. The latent voxels are projected into screen space texels for
+diffusion, then reprojected back into the 3D space for persistence and that volume is saved to disk.
 
 The number of diffusion steps that have been run on each voxel are stored along with the output latents. As additional
 images are generated, the existing latents are used to guide additional generation using a combination of inpainting
-and differential diffusion for soft inpainting with latent guidance.
+and Differential Diffusion for soft inpainting with latent guidance at each step.
+
+Once the persistent latent volume has been fully diffused, it can be viewed in a modern web browser using the VAE
+decoder, without running the UNet. The performance of that method allows for multiple frames per second, but quality
+is lacking due to some of the problems noted below.
 
 ### Problems
 
@@ -63,6 +67,10 @@ There are two main problems with storing latent texels in a 3D voxel space:
 2. The interpolation from voxels in the 3D volume to texels in the screen-space latents causes a degradation in the
    image quality with each projection, that is, it gets blurry over time. This can largely be avoided by not updating
    latent voxels once they have reached the desired step count and only using them for guidance after that.
+3. The pipeline is VRAM intensive, because the number of materials that are visible in the 3D projection correlates to
+   the number of prompts and the batch size during diffusion. This increase is approximately linear and can be worked
+   around by running each prompt embedding through the UNet separately, which takes longer but allows for an unlimited
+   number of materials and prompts.
 
 ## Bibliography
 
@@ -72,3 +80,5 @@ There are two main problems with storing latent texels in a 3D voxel space:
   - https://differential-diffusion.github.io/
 - Explaining the SDXL latent space
   - https://huggingface.co/blog/TimothyAlexisVass/explaining-the-sdxl-latent-space
+- Adding Conditional Control to Text-to-Image Diffusion Models
+  - https://arxiv.org/abs/2302.05543
