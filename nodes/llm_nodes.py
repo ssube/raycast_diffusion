@@ -39,7 +39,9 @@ class GPT2Text:
         tokenizer = GPT2Tokenizer.from_pretrained(tokenizer_path)
         return tokenizer
 
-    def generate_text(self, model, sequence, max_length, top_k=50, top_p=0.95, device=None):
+    def generate_text(
+        self, model, sequence, max_length, top_k=50, top_p=0.95, device=None
+    ):
         output_dir = f"/home/ssube/notebooks/gpt2/training-{model}"
         model = self.load_model(output_dir, device)
         tokenizer = self.load_tokenizer(output_dir)

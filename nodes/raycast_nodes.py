@@ -273,7 +273,7 @@ class CameraControl:
             },
             "optional": {
                 "extra_geometry": ("GEOMETRY", {}),
-            }
+            },
         }
 
     # output: Camera
@@ -285,14 +285,18 @@ class CameraControl:
     OUTPUT_NODE = True
     CATEGORY = "raycast_diffusion/geometry"
 
-    def update_camera(self, front, lookat, up, zoom, world, materials, profile, extra_geometry=None):
+    def update_camera(
+        self, front, lookat, up, zoom, world, materials, profile, extra_geometry=None
+    ):
         geometry_data = make_world_triangles(world, materials)
-        box, mesh, raycast_scene = main_create_geometry(geometry_data, extra_geometry=extra_geometry)
+        box, mesh, raycast_scene = main_create_geometry(
+            geometry_data, extra_geometry=extra_geometry
+        )
         app, mesh_vis, texture_vis, diffusion_vis = main_start_windows(
             profile.width, profile.height, box, mesh
         )
 
-        for mesh in (extra_geometry or []):
+        for mesh in extra_geometry or []:
             mesh_vis.add_geometry(mesh)
 
         trajectory = create_view_trajectory(front, lookat, up, zoom)
@@ -733,7 +737,9 @@ class LoadModelGeometry:
     OUTPUT_NODE = True
     CATEGORY = "raycast_diffusion/geometry"
 
-    def add_model_geometry(self, model, previous_models = None, translate=None, rotate=None, scale=None):
+    def add_model_geometry(
+        self, model, previous_models=None, translate=None, rotate=None, scale=None
+    ):
         previous_models = previous_models or []
 
         if model == "armadillo":
