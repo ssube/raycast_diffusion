@@ -17,6 +17,7 @@ class GPT2Text:
                     "FLOAT",
                     {"default": 0.95, "min": 0.1, "max": 1.0, "step": 0.05},
                 ),
+                "device": (["cpu", "cuda:0", "cuda:1"], {"default": "cuda:0"}),
             },
         }
 
@@ -26,20 +27,26 @@ class GPT2Text:
     OUTPUT_NODE = True
     CATEGORY = "llm"
 
-    def load_model(self, model_path):
+    def load_model(self, model_path, device=None):
         model = GPT2LMHeadModel.from_pretrained(model_path)
-        # model.to("cuda")
+
+        if device:
+            model.to(device)
+
         return model
 
     def load_tokenizer(self, tokenizer_path):
         tokenizer = GPT2Tokenizer.from_pretrained(tokenizer_path)
         return tokenizer
 
-    def generate_text(self, model, sequence, max_length, top_k=50, top_p=0.95):
+    def generate_text(self, model, sequence, max_length, top_k=50, top_p=0.95, device=None):
         output_dir = f"/home/ssube/notebooks/gpt2/training-{model}"
-        model = self.load_model(output_dir)
+        model = self.load_model(output_dir, device)
         tokenizer = self.load_tokenizer(output_dir)
         ids = tokenizer.encode(sequence, return_tensors="pt")
+        if device:
+            ids = ids.to(device)
+
         final_outputs = model.generate(
             ids,
             do_sample=True,
@@ -51,8 +58,8 @@ class GPT2Text:
         result = tokenizer.decode(final_outputs[0], skip_special_tokens=True)
         return result
 
-    def make_text(self, prompt, model, max_tokens, top_k, top_p):
-        output = self.generate_text(model, prompt, max_tokens, top_k, top_p)
+    def make_text(self, prompt, model, max_tokens, top_k, top_p, device):
+        output = self.generate_text(model, prompt, max_tokens, top_k, top_p, device)
         return {
             "result": [output],
             "ui": {"text": [output]},
