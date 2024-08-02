@@ -5,6 +5,7 @@ import folder_paths
 import latent_formats
 import latent_preview
 import numpy as np
+import open3d as o3d
 
 from ..rcd.main import (
     BackgroundMaterialData,
@@ -270,6 +271,9 @@ class CameraControl:
                 "materials": ("MATERIALS", {}),
                 "profile": ("PROFILE", {}),
             },
+            "optional": {
+                "extra_geometry": ("GEOMETRY", {}),
+            }
         }
 
     # output: Camera
@@ -281,12 +285,15 @@ class CameraControl:
     OUTPUT_NODE = True
     CATEGORY = "raycast_diffusion/geometry"
 
-    def update_camera(self, front, lookat, up, zoom, world, materials, profile):
+    def update_camera(self, front, lookat, up, zoom, world, materials, profile, extra_geometry=None):
         geometry_data = make_world_triangles(world, materials)
-        box, mesh, raycast_scene = main_create_geometry(geometry_data)
+        box, mesh, raycast_scene = main_create_geometry(geometry_data, extra_geometry=extra_geometry)
         app, mesh_vis, texture_vis, diffusion_vis = main_start_windows(
             profile.width, profile.height, box, mesh
         )
+
+        for mesh in (extra_geometry or []):
+            mesh_vis.add_geometry(mesh)
 
         trajectory = create_view_trajectory(front, lookat, up, zoom)
         mesh_vis.set_view_status(dumps(trajectory))
@@ -701,3 +708,59 @@ class SaveWorldLatents:
     def save_world_latents(self, world):
         # TODO: save the world latents
         return {"result": [world], "ui": {"world": [world.voxels.shape]}}
+
+
+class LoadModelGeometry:
+    # input: Model (STRING)
+    # input: Previous Models
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": (["armadillo", "bunny", "knot", "monkey"], {}),
+            },
+            "optional": {
+                "previous_models": ("GEOMETRY", {}),
+                "translate": ("FLOAT3", {}),
+                "rotate": ("FLOAT3", {}),
+                "scale": ("FLOAT", {}),
+            },
+        }
+
+    RETURN_TYPES = ("GEOMETRY",)
+
+    FUNCTION = "add_model_geometry"
+    OUTPUT_NODE = True
+    CATEGORY = "raycast_diffusion/geometry"
+
+    def add_model_geometry(self, model, previous_models = None, translate=None, rotate=None, scale=None):
+        previous_models = previous_models or []
+
+        if model == "armadillo":
+            armadillo_mesh = o3d.data.ArmadilloMesh()
+            mesh = o3d.io.read_triangle_mesh(armadillo_mesh.path)
+        elif model == "bunny":
+            bunny_mesh = o3d.data.BunnyMesh()
+            mesh = o3d.io.read_triangle_mesh(bunny_mesh.path)
+        elif model == "knot":
+            knot_mesh = o3d.data.KnotMesh()
+            mesh = o3d.io.read_triangle_mesh(knot_mesh.path)
+        elif model == "monkey":
+            monkey_mesh = o3d.data.MonkeyModel()
+            mesh = o3d.io.read_triangle_mesh(monkey_mesh.path)
+
+        mesh.compute_vertex_normals()
+
+        if scale:
+            mesh.scale(scale, center=mesh.get_center())
+
+        if rotate:
+            mesh.rotate(mesh.get_rotation_matrix_from_xyz(rotate))
+
+        if translate:
+            mesh.translate(np.asarray(translate))
+
+        return {
+            "result": [[*previous_models, mesh]],
+            "ui": {"vertices": [len(mesh.vertices)]},
+        }

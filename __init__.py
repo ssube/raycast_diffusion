@@ -14,6 +14,7 @@ from .nodes.raycast_nodes import (
   LoadWorldLatents,
   MakeProfile,
   SaveWorldLatents,
+  LoadModelGeometry,
 )
 from .nodes.utility_nodes import ExamineInput, Float3, ToString, ShowNumpyImage, SaveImageStack, ChangeDType, ChangeDevice, NormalizeArray
 
@@ -35,6 +36,7 @@ NODE_CLASS_MAPPINGS = {
   "LoadWorldLatents": LoadWorldLatents,
   "MakeProfile": MakeProfile,
   "SaveWorldLatents": SaveWorldLatents,
+  "LoadModelGeometry": LoadModelGeometry,
   # utility
   "Float3": Float3,
   "ToString": ToString,
@@ -64,6 +66,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
   "UpdateWorldLatents": "Update World Latents",
   "SaveWorldLatents": "Save World Latents",
   "MakeProfile": "Make Pipeline Profile",
+  "LoadModelGeometry": "Load Model Geometry",
   # utility
   "ChangeDevice": "Change Device",
   "ChangeDType": "Change Data Type",

@@ -1491,7 +1491,7 @@ def main_load_metadata(
     return material_data, profile_data, source_texture, profile
 
 
-def main_create_geometry(geometry: GeometryData) -> Tuple[Any, Any, Any]:
+def main_create_geometry(geometry: GeometryData, extra_geometry: List[o3d.geometry.Geometry3D] = None) -> Tuple[Any, Any, Any]:
     vertices = o3d.utility.Vector3dVector(geometry.vertices)
     triangles = o3d.utility.Vector3iVector(geometry.triangles)
     mesh = o3d.geometry.TriangleMesh(vertices=vertices, triangles=triangles)
@@ -1502,6 +1502,9 @@ def main_create_geometry(geometry: GeometryData) -> Tuple[Any, Any, Any]:
     logger.debug("building raycasting scene")
     scene = o3d.t.geometry.RaycastingScene()
     scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(mesh))
+
+    for extra_mesh in (extra_geometry or []):
+        scene.add_triangles(o3d.t.geometry.TriangleMesh.from_legacy(extra_mesh))
 
     # prepare a box for the texture display
     logger.debug("building box for texture display")
