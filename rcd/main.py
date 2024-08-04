@@ -194,6 +194,10 @@ class MaterialData:
     height: int
     display: Tuple[int, int, int] | None = None
     negative_prompt: str | None = None
+    start_height: int | None = None
+    # over/under materials
+    material_over: str | None = None
+    material_under: str | None = None
 
 
 @dataclass
@@ -495,6 +499,50 @@ def save_latents(world: WorldVolume):
 
 
 # region: Geometry
+def apply_material_stack(
+    materials: MaterialFile,
+    material_index: int,
+    world_volume: np.ndarray,
+    x: int,
+    y: int,
+    min_height=0,
+) -> None:
+    """
+    Apply a material stack to the world volume.
+    """
+
+    world_index = material_index + 1
+    material = materials.materials[material_index]
+
+    # apply the material to the world volume
+    start_height = material.start_height or min_height
+    for z in range(start_height, material.height):
+        if world_volume[x, y, z] == 0:
+            world_volume[x, y, z] = world_index
+        else:
+            print(f"voxel {x}, {y}, {z} already has a material")
+
+    # apply the over material
+    if material.material_over:
+        over_index = next(
+            i
+            for i, m in enumerate(materials.materials)
+            if m.name == material.material_over
+        )
+        apply_material_stack(
+            materials, over_index, world_volume, x, y, min_height=material.height
+        )
+
+    # apply the under material
+    if material.material_under:
+        under_index = next(
+            i
+            for i, m in enumerate(materials.materials)
+            if m.name == material.material_under
+        )
+        apply_material_stack(materials, under_index, world_volume, x, y)
+
+
 def make_world(
     materials: MaterialFile,
     source_texture: np.ndarray,
@@ -517,8 +565,7 @@ def make_world(
             source_material = source_texture[x, y]
             for i, m in enumerate(materials.materials):
                 if (source_material == m.source).all():
-                    for z in range(m.height):
-                        volume[x, y, z] = i + 1
+                    apply_material_stack(materials, i, volume, x, y)
 
     # add ceiling and floor to voxels that do not have a material
     if floor_material is not None:

@@ -79,6 +79,12 @@ class AddMaterial:
             },
             "optional": {
                 "render_color": ("FLOAT3", {}),
+                "start_height": (
+                    "INT",
+                    {"default": 0, "min": 0, "max": 100, "step": 1},
+                ),
+                "material_over": ("STRING", {}),
+                "material_under": ("STRING", {}),
             },
         }
 
@@ -89,8 +95,29 @@ class AddMaterial:
     OUTPUT_NODE = True
     CATEGORY = "raycast_diffusion/materials"
 
-    def add_material(self, materials, name, prompt, color, height, render_color=None):
-        data = MaterialData(name, color, prompt, height, render_color or color)
+    def add_material(
+        self,
+        materials,
+        name,
+        prompt,
+        color,
+        height,
+        render_color=None,
+        start_height=0,
+        material_over=None,
+        material_under=None,
+    ):
+        data = MaterialData(
+            name,
+            color,
+            prompt,
+            height,
+            render_color or color,
+            None,
+            start_height,
+            material_over,
+            material_under,
+        )
 
         # append or replace by name
         replace = False
