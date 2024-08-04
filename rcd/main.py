@@ -520,7 +520,7 @@ def apply_material_stack(
         if world_volume[x, y, z] == 0:
             world_volume[x, y, z] = world_index
         else:
-            print(f"voxel {x}, {y}, {z} already has a material")
+            logger.debug(f"voxel {x}, {y}, {z} already has a material")
 
     # apply the over material
     if material.material_over:

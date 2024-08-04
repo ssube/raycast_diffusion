@@ -789,10 +789,11 @@ class LoadModelGeometry:
                 "model": (["armadillo", "bunny", "knot", "monkey"], {}),
             },
             "optional": {
-                "previous_models": ("GEOMETRY", {}),
+                "previous_geometry": ("GEOMETRY", {}),
                 "translate": ("FLOAT3", {}),
                 "rotate": ("FLOAT3", {}),
                 "scale": ("FLOAT", {}),
+                "color": ("FLOAT3", {}),
             },
         }
 
@@ -803,9 +804,9 @@ class LoadModelGeometry:
     CATEGORY = "raycast_diffusion/geometry"
 
     def add_model_geometry(
-        self, model, previous_models=None, translate=None, rotate=None, scale=None
+        self, model, previous_geometry=None, translate=None, rotate=None, scale=None, color=None
     ):
-        previous_models = previous_models or []
+        previous_geometry = previous_geometry or []
 
         if model == "armadillo":
             armadillo_mesh = o3d.data.ArmadilloMesh()
@@ -824,6 +825,9 @@ class LoadModelGeometry:
 
         mesh.compute_vertex_normals()
 
+        if color:
+            mesh.paint_uniform_color(color)
+
         if scale:
             mesh.scale(scale, center=mesh.get_center())
 
@@ -834,6 +838,6 @@ class LoadModelGeometry:
             mesh.translate(np.asarray(translate))
 
         return {
-            "result": [[*previous_models, mesh]],
+            "result": [[*previous_geometry, mesh]],
             "ui": {"vertices": [len(mesh.vertices)]},
         }
