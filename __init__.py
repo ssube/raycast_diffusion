@@ -15,6 +15,8 @@ from .nodes.raycast_nodes import (
   MakeProfile,
   SaveWorldLatents,
   LoadModelGeometry,
+  LightenBlur,
+  LatentColorCorrection,
 )
 from .nodes.utility_nodes import ExamineInput, Float3, ToString, ShowNumpyImage, SaveImageStack, ChangeDType, ChangeDevice, NormalizeArray
 
@@ -37,6 +39,8 @@ NODE_CLASS_MAPPINGS = {
   "MakeProfile": MakeProfile,
   "SaveWorldLatents": SaveWorldLatents,
   "LoadModelGeometry": LoadModelGeometry,
+  "LightenBlur": LightenBlur,
+  "LatentColorCorrection": LatentColorCorrection,
   # utility
   "Float3": Float3,
   "ToString": ToString,
@@ -67,6 +71,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
   "SaveWorldLatents": "Save World Latents",
   "MakeProfile": "Make Pipeline Profile",
   "LoadModelGeometry": "Load Model Geometry",
+  "LightenBlur": "Lighten Blur",
+  "LatentColorCorrection": "Latent Color Correction",
   # utility
   "ChangeDevice": "Change Device",
   "ChangeDType": "Change Data Type",

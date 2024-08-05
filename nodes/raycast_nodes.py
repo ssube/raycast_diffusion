@@ -6,6 +6,7 @@ import latent_formats
 import latent_preview
 import numpy as np
 import open3d as o3d
+import torch
 
 from ..rcd.main import (
     BackgroundMaterialData,
@@ -26,14 +27,18 @@ from ..rcd.main import (
     on_recast,
     project_diffusion,
     project_voxel_hit_map,
-    run_diffusion,
-    run_highres,
+    run_img2img,
+    run_inpaint,
     update_projected_latents,
     update_textures,
 )
+from ..rcd.utils.blur import lighten_blur
+from ..rcd.utils.latent_correction import (
+    center_tensor,
+    maximize_tensor,
+    soft_clamp_tensor,
+)
 from .utils import image_to_tensor, pack_latents, tensor_to_image, unpack_latents
-
-FLOAT3_LIMIT = 10000.0
 
 
 class EmptyMaterials:
@@ -843,3 +848,91 @@ class LoadModelGeometry:
             "result": [[*previous_geometry, mesh]],
             "ui": {"vertices": [len(mesh.vertices)]},
         }
+
+
+class LightenBlur:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "iterations": ("INT", {"default": 1, "min": 1, "max": 10, "step": 1}),
+                "kernel_size": ("INT", {"default": 5, "min": 1, "max": 13, "step": 2}),
+                "sigma": ("INT", {"default": 1, "min": 1, "max": 10, "step": 1}),
+            },
+            "optional": {
+                "image": ("IMAGE", {}),
+                "image-stack": ("IMAGE_STACK", {}),
+                "latent": ("LATENT", {}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE", "IMAGE_STACK", "LATENT")
+
+    FUNCTION = "lighten_blur"
+    OUTPUT_NODE = True
+    CATEGORY = "raycast_diffusion/filter"
+
+    def lighten_blur(
+        self,
+        iterations: int,
+        kernel_size: int,
+        sigma: int,
+        image: np.ndarray | None = None,
+        image_stack: np.ndarray | None = None,
+        latent=None,
+    ):
+        # convert to tensor
+        if image is not None:
+            image = image_to_tensor(image)
+        elif image_stack is not None:
+            image = torch.as_tensor(image_stack)
+        elif latent is not None:
+            image = unpack_latents(latent)
+
+        # run lighten blur
+        for _ in range(iterations):
+            image = lighten_blur(image, kernel_size, sigma)
+
+        # convert back to the original type
+        if latent is not None:
+            result = [None, None, pack_latents(image)]
+        elif image_stack is not None:
+            result = [None, image.numpy(), None]
+        elif image is not None:
+            result = [image_to_tensor(image), None, None]
+
+        return {"result": result, "ui": {"image": [image.shape]}}
+
+
+class LatentColorCorrection:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "latent": ("LATENT", {}),
+                "center": ([True, False], {"default": True}),
+                "maximize": ([True, False], {"default": True}),
+                "soft_clamp": ([True, False], {"default": True}),
+            },
+        }
+
+    RETURN_TYPES = ("LATENT",)
+
+    FUNCTION = "latent_color_correction"
+    OUTPUT_NODE = True
+    CATEGORY = "raycast_diffusion/filter"
+
+    def latent_color_correction(self, latent, center, maximize, soft_clamp):
+        latent = unpack_latents(latent)
+
+        if center:
+            latent = center_tensor(latent)
+
+        if maximize:
+            latent = maximize_tensor(latent)
+
+        if soft_clamp:
+            latent = soft_clamp_tensor(latent)
+
+        latent = pack_latents(latent)
+        return {"result": [latent]}
