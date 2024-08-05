@@ -1,3 +1,7 @@
+background:
+  prompt: bright blue sky with fluffy white clouds
+  negative_prompt: artifacts, distortion, noise
+
 materials:
   - name: wall
     source: [0, 0, 0]

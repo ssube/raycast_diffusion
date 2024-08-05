@@ -1,3 +1,7 @@
+background:
+  prompt: lush jungle with sunlight filtering through the canopy
+  negative_prompt: artifacts, distortion, noise
+
 materials:
   - name: wall
     source: [0, 0, 0]

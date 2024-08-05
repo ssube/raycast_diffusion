@@ -1,3 +1,7 @@
+background:
+  prompt: cyberpunk cityscape at night
+  negative_prompt: artifacts, distortion, noise
+
 materials:
   - name: wall
     source: [0, 0, 0]

@@ -326,9 +326,14 @@ class CameraControl:
         box, mesh, raycast_scene = main_create_geometry(
             geometry_data, extra_geometry=extra_geometry
         )
-        app, mesh_vis, texture_vis, diffusion_vis = main_start_windows(
-            profile.width, profile.height, box, mesh
-        )
+        (
+            app,
+            mesh_vis,
+            texture_vis,
+            diffusion_vis,
+            texture_material,
+            diffusion_material,
+        ) = main_start_windows(profile.width, profile.height, box, mesh)
 
         for mesh in extra_geometry or []:
             mesh_vis.add_geometry(mesh)
@@ -341,7 +346,9 @@ class CameraControl:
 
         camera_data = CameraData(mesh_vis, raycast_scene)
         raycast_data = on_recast(camera_data, profile)
-        index, depth = update_textures(materials, raycast_data, world, profile)
+        projected, index, depth = update_textures(
+            materials, raycast_data, world, profile
+        )
 
         return {"result": [camera_data, index, depth, render], "ui": {"camera": []}}
 
@@ -478,7 +485,7 @@ class MultiDiffControlInpaint:
 
         render = RenderData(index=masks, depth=depth)
         projection = ProjectionData(index=masks, latents=latents, steps=steps)
-        diffusion = run_diffusion(
+        diffusion = run_inpaint(
             pipeline,
             profile,
             render,
@@ -575,7 +582,7 @@ class MultiControlImg2Img:
 
         render = RenderData(index=masks, depth=depth)
         projection = ProjectionData(index=masks, latents=latents, steps=steps)
-        diffusion = run_highres(
+        diffusion = run_img2img(
             pipeline,
             profile,
             render,
@@ -811,7 +818,13 @@ class LoadModelGeometry:
     CATEGORY = "raycast_diffusion/geometry"
 
     def add_model_geometry(
-        self, model, previous_geometry=None, translate=None, rotate=None, scale=None, color=None
+        self,
+        model,
+        previous_geometry=None,
+        translate=None,
+        rotate=None,
+        scale=None,
+        color=None,
     ):
         previous_geometry = previous_geometry or []
 

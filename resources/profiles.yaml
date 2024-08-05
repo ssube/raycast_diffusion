@@ -1,19 +1,22 @@
 profiles:
   - name: sd15
     steps: 30
-    bootstrapping: 10
+    bootstrapping_steps: 10
+    capture_steps: 25
     cfg: 5.0
     width: 512
     height: 512
   - name: sdxl
     steps: 40
-    bootstrapping: 10
+    bootstrapping_steps: 10
+    capture_steps: 35
     cfg: 6.0
     width: 1024
     height: 1024
   - name: lightning
     steps: 10
-    bootstrapping: 2
+    bootstrapping_steps: 2
+    capture_steps: 8
     cfg: 0.5
     width: 1024
     height: 1024

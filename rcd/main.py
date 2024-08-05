@@ -276,6 +276,28 @@ class CameraData:
     raycast_scene: Any
 
 
+@dataclass
+class CameraPosition:
+    position: Tuple[float, float, float]
+    target: Tuple[float, float, float]
+    up: Tuple[float, float, float]
+
+
+@dataclass
+class SceneGeometry:
+    path: str
+    scale: float
+    position: Tuple[float, float, float]
+    rotation: Tuple[float, float, float]
+
+
+@dataclass
+class SceneFile:
+    camera_path: List[CameraPosition] | None
+    geometry: List[SceneGeometry] | None
+    source_texture: str
+
+
 # endregion
 
 # region: Constants
@@ -801,6 +823,7 @@ def make_projected_latents(
             if voxel is not None:
                 step = latent_steps[voxel][0]
                 count = counts[0, :, x // LATENT_SCALE, y // LATENT_SCALE]
+                # logger.warning("shapes", voxel, step.shape, count.shape, latent_steps.shape)
                 if step > 0 and np.all(count == 0):
                     # accumulate and average latents for multiple voxels
                     latents[
@@ -981,8 +1004,8 @@ def load_sd(
 
     if tiny_vae:
         logger.warning("using tiny VAE")
-        vae = load_tiny_vae(checkpoint, sdxl)
-        sd.vae = vae
+        vae = load_tiny_vae(sdxl=sdxl)
+        sd.vae = vae.to(device)
 
     if xformers:
         logger.warning("enabling xformers")
@@ -1055,7 +1078,7 @@ def preview(
 
     # run final steps
     sd = MultiDiffusionXLImg2Img.from_pipe(sd)
-    return run_diffusion(sd, profile, render, projection, materials)
+    return run_inpaint(sd, profile, render, projection, materials)
 
 
 def decode(
@@ -1184,14 +1207,10 @@ def make_mask_stack(
 
 
 @torch.no_grad()
-def run_diffusion(
+def run_inpaint(
     sd: Callable,
     profile: ProfileData,
-    # index_texture: np.ndarray,
-    # depth_texture: np.ndarray,
     render: RenderData,
-    # input_latents: np.ndarray,
-    # input_steps: np.ndarray,
     projection: ProjectionData,
     material_data: MaterialFile,
     callback: Callable | None = None,
@@ -1358,7 +1377,7 @@ def run_diffusion(
 
 
 @torch.no_grad()
-def run_highres(
+def run_img2img(
     sd: Callable,
     profile: ProfileData,
     render: RenderData,
@@ -1371,29 +1390,21 @@ def run_highres(
     controlnet_strength: float = 0.6,
     seed: int | None = None,
     color_correction: bool = True,
+    step_multiplier: int = 2,
 ) -> DiffusionData:
+    # resize everything based on the input size
     input_width = projection.latents.shape[2]
     input_height = projection.latents.shape[3]
-    latent_size = (profile.width // LATENT_SCALE, profile.height // LATENT_SCALE)
+    latent_size = (input_width, input_height)
+    highres_size = (input_width * LATENT_SCALE, input_height * LATENT_SCALE)
 
     masks, prompts, negative_prompts = make_mask_stack(render, material_data)
 
-    # highres pass
-    # TODO: remove this scale factor
-    highres_scale = 1.5
-    highres_size = (
-        int(profile.width * highres_scale),
-        int(profile.height * highres_scale),
-    )
-    highres_latent_size = (
-        int(latent_size[0] * highres_scale),
-        int(latent_size[1] * highres_scale),
-    )
-
+    # create a new pipeline
     sd_highres = MultiDiffusionXLImg2Img.from_pipe(sd)
     device = sd.unet.device
 
-    masks = interpolate_latents(masks, size=highres_latent_size)
+    masks = interpolate_latents(masks, size=latent_size)
     masks = masks.to(device)
 
     depth_image = torch.from_numpy(render.depth).to(device)
@@ -1401,12 +1412,10 @@ def run_highres(
     highres_depth = interpolate_latents(depth_image, size=highres_size)
     save_numpy_image(highres_depth.squeeze(0), f"highres_depth{file_suffix}.png")
 
-    # TODO: attempt latent upscale for highres
-    # highres_latents = upscale(final_latents, highres_scale)
     highres_image = previous_output.resize(highres_size)
     highres_image.save(f"highres_input{file_suffix}.png")
 
-    highres_masks = interpolate_latents(masks, size=highres_latent_size)
+    highres_masks = interpolate_latents(masks, size=latent_size)
     highres_masks = lighten_blur(highres_masks)
     for i in range(highres_masks.shape[0]):
         save_numpy_image(highres_masks[i, :, :, :], f"highres_mask{file_suffix}{i}.png")
@@ -1442,7 +1451,7 @@ def run_highres(
         control_image=highres_depth,
         image=highres_image,
         guidance_scale=profile.cfg,
-        num_inference_steps=profile.steps * 2,
+        num_inference_steps=profile.steps * step_multiplier,
         bootstrapping=0,
         return_dict=False,
         strength=strength,  # switching this from 0.4 to 0.5 makes a huge difference
@@ -1556,7 +1565,10 @@ def update_textures(
     depth_texture = make_projected_depth_texture(raycast)
     save_numpy_image(depth_texture, f"depth{file_suffix}.png")
 
-    return projected_texture, depth_texture
+    index_texture = make_projected_index_texture(hit_map, world)
+    save_numpy_image(index_texture, f"index{file_suffix}.png")
+
+    return projected_texture, index_texture, depth_texture
 
 
 def project_diffusion(
@@ -1657,7 +1669,14 @@ def main_start_windows(width, height, box, mesh):
     )
     mesh_vis.add_geometry(mesh)
 
-    return app, mesh_vis, texture_vis, diffusion_vis
+    return (
+        app,
+        mesh_vis,
+        texture_vis,
+        diffusion_vis,
+        texture_material,
+        diffusion_material,
+    )
 
 
 def on_recast(camera: CameraData, profile: ProfileData) -> RaycastData:
@@ -1765,7 +1784,7 @@ def main():
         np.save("world_voxels.npy", world_volume.voxels)
 
     # load any existing latents or initialize new ones
-    load_latents(require_existing=args.decode_only)
+    load_latents(world_volume, require_existing=args.decode_only)
 
     # open3d stuff
     logger.info("converting triangles to mesh")
@@ -1781,54 +1800,72 @@ def main():
 
     # start the visualizers
     logger.debug("starting visualizers")
-    app, mesh_vis, texture_vis, diffusion_vis = main_start_windows(
-        width, height, box, mesh
+    app, mesh_vis, texture_vis, diffusion_vis, texture_material, diffusion_material = (
+        main_start_windows(width, height, box, mesh)
     )
 
     diffusion_index = 0
 
+    last_projected_texture = None
+    last_diffusion_texture = None
+    next_projected_texture = None
+    next_diffusion_texture = None
+
     def on_diffusion(vis):
         nonlocal diffusion_index
+        nonlocal next_diffusion_texture
+        nonlocal next_projected_texture
 
         if args.decode_only:
             logger.error("diffusion is not available in preview mode")
             return
 
-        ray_points, ray_depth = on_recast(mesh_vis, scene, width, height)
+        camera_data = CameraData(mesh_vis, scene)
+        raycast_data = on_recast(camera_data, profile)
         logger.warning("running diffusion")
-        update_textures(
+
+        projected, index, depth = update_textures(
             material_data,
-            ray_points,
-            ray_depth,
-            height,
-            width,
+            raycast_data,
+            world_volume,
             profile,
-            f"-{diffusion_index}",
+            file_suffix=f"-{diffusion_index}",
         )
-        index_texture, input_latents, input_steps = project_diffusion(
-            world_volume.voxels, ray_points
-        )
-        run_diffusion(
+        render_data = RenderData(index=index, depth=depth)
+
+        hit_map = project_voxel_hit_map(raycast_data)
+        projection_data = project_diffusion(world_volume, hit_map)
+
+        diffusion_data = run_inpaint(
             sd,
             profile,
-            index_texture,
-            input_latents,
-            input_steps,
-            ray_points,
-            f"-{diffusion_index}",
+            render_data,
+            projection_data,
+            material_data,
+            file_suffix=f"-{diffusion_index}",
         )
         logger.warning("diffusion complete")
         diffusion_index += 1
+        next_diffusion_texture = o3d.geometry.Image(np.asarray(diffusion_data.image))
+        next_projected_texture = o3d.geometry.Image(projected)
 
     def on_preview(vis):
-        on_recast(mesh_vis, scene, width, height, world_volume.voxels, material_data)
+        camera_data = CameraData(mesh_vis, scene)
+        raycast_data = on_recast(camera_data, profile)
+        projected, index, depth = update_textures(
+            material_data,
+            raycast_data,
+            world_volume,
+            profile,
+            file_suffix=f"-{diffusion_index}",
+        )
+        render_data = RenderData(index=index, depth=depth)
         logger.warning("running preview")
-        preview(sd, profile)
+        preview(sd, profile, render_data, world_volume, raycast_data, material_data)
         logger.warning("preview complete")
 
     def on_splat(vis):
         logger.warning("running splat")
-        on_recast(mesh_vis, scene, width, height, world_volume.voxels, material_data)
         splat_texture(sd, args.splat_texture)
         on_preview(vis)
         logger.warning("splat complete")
@@ -1845,11 +1882,6 @@ def main():
     # diffusion_thread = threading.Thread(target=update_textures, args=(height, width), daemon=True)
     # diffusion_thread.start()
 
-    last_projected_texture = None
-    last_diffusion_texture = None
-    next_projected_texture = None
-    next_diffusion_texture = None
-
     # pre-render selected angles
     if args.render_angle > 0:
         mesh_controls = mesh_vis.get_view_control()
@@ -1859,7 +1891,7 @@ def main():
             ray_points, ray_depth = on_recast(
                 mesh_vis, scene, width, height, world_volume.voxels, material_data
             )
-            next_projected_texture, next_diffusion_texture = update_textures(
+            next_projected_texture, _, next_diffusion_texture = update_textures(
                 material_data, ray_points, ray_depth, world_volume.voxels, height, width
             )
 
@@ -1902,11 +1934,11 @@ def main():
             next_projected_texture is not None
             and id(next_projected_texture) != last_projected_texture
         ):
-            # texture_material.albedo_img = o3d.geometry.Image(next_projected_texture)
-            # texture_vis.remove_geometry("box")
-            # texture_vis.add_geometry(
-            #     {"name": "box", "geometry": box, "material": texture_material}
-            # )
+            texture_material.albedo_img = next_projected_texture
+            texture_vis.remove_geometry("box")
+            texture_vis.add_geometry(
+                {"name": "box", "geometry": box, "material": texture_material}
+            )
             last_projected_texture = id(next_projected_texture)
 
         # show the diffusion result
@@ -1914,11 +1946,11 @@ def main():
             next_diffusion_texture is not None
             and id(next_diffusion_texture) != last_diffusion_texture
         ):
-            # diffusion_material.albedo_img = o3d.geometry.Image(next_diffusion_texture)
-            # diffusion_vis.remove_geometry("box")
-            # diffusion_vis.add_geometry(
-            #     {"name": "box", "geometry": box, "material": diffusion_material}
-            # )
+            diffusion_material.albedo_img = next_diffusion_texture
+            diffusion_vis.remove_geometry("box")
+            diffusion_vis.add_geometry(
+                {"name": "box", "geometry": box, "material": diffusion_material}
+            )
             last_diffusion_texture = id(next_diffusion_texture)
 
         # update the visualizer
