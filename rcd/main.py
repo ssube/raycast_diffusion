@@ -398,7 +398,6 @@ path_latents = "latents.npy"
 path_steps = "steps.npy"
 preview_steps = 5
 voxel_checkerboard = 0.85
-voxel_multiplier = 4
 voxel_size = 1.0
 # endregion
 
@@ -548,6 +547,7 @@ def make_world(
     source_texture: np.ndarray,
     ceiling_material: str | None = None,
     floor_material: str | None = None,
+    voxel_multiplier: int = 1,
 ) -> WorldVolume:
     """
     Create a 3D voxel grid from the source texture and assign materials based on the material data.

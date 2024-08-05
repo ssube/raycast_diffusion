@@ -223,7 +223,9 @@ class ExtrudeWorldGeometry:
         # print("source texture info", source_texture.shape, source_texture.dtype, source_texture.min(), source_texture.max())
         numpy_source = source_texture[0].cpu().numpy() * 255.0
         numpy_source = numpy_source.astype(np.uint8)
-        world = make_world(materials, numpy_source, ceiling_material, floor_material)
+        world = make_world(
+            materials, numpy_source, ceiling_material, floor_material, voxels_per_pixel
+        )
 
         return {"result": [world], "ui": {"world_size": world.voxels.shape}}
 
