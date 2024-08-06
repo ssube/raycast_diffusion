@@ -6,6 +6,17 @@ This is an effort to make Stable Diffusion's output stable in a 3D space, using 
 store partially diffused latents and using them to guide future diffusion paths using a combination of MultiDiffusion,
 Differential Diffusion, and ControlNet.
 
+Cyberpunk | Miniature City
+:-: | :-:
+<video src="https://demo.raycast-diffusion.com/rcd-cyber.mp4" width=400/> | <video src="https://demo.raycast-diffusion.com/rcd-mini.mp4" width=400/>
+
+It happens to work well for visualizing 3D scenes, including architectural visualization and integrating logos and
+designs into a larger scene, vaguely similar to the effect produced by the QR code ControlNet.
+
+![blue hexagon logo with modern architecture](https://demo.raycast-diffusion.com/raycast-logo.png)
+
+![cloud formation transforming into rabbit in front of miniature cityscape](https://demo.raycast-diffusion.com/raycast-bunny.png)
+
 ## Setup
 
 This is distributed as a set of Comfy nodes, with an experimental windowed mode and interactive 3D navigation.
@@ -36,6 +47,35 @@ This workflow is set up for SDXL, with profiles for regular and Lightning/Turbo 
 Higher resolution versions of the scene are rendered using both Raycast Diffusion and traditional Stable Diffusion to
 provide a comparison, then the high resolution raycast version is upscaled and resampled again to produce a 2.3k final
 image.
+
+## Standalone Mode
+
+Raycast Diffusion can run as a standalone windowed application with interactive 3D control.
+
+To run the standalone mode, please use the command line:
+
+```shell
+python3 -m rcd.main \
+  --checkpoint /mnt/optane/comfy/checkpoints/dynavision.safetensors \
+  --material-data resources/materials/bedroom.yaml \
+  --profile-data resources/profiles.yaml \
+  --source-texture resources/test-3.png \
+  --profile sdxl \
+  --ceiling-material ceiling \
+  --floor-material floor \
+  --sdxl
+```
+
+Printing the `--help` text will show the other available options.
+
+In standalone mode, the following controls are available:
+
+- left-click will rotate the camera
+- `D` will run diffusion in the current direction
+- `P` will run preview in the current direction (VAE decoder only)
+- `S` will splat a texture in the current direction
+
+Some additional controls are listed in [the Open3D docs](https://www.open3d.org/docs/release/tutorial/visualization/visualization.html).
 
 ## Methodology
 

@@ -1565,14 +1565,20 @@ def update_textures(
     save_numpy_image(index_texture, f"index{file_suffix}.png")
 
     # adjust depth for translucent and transparent materials
-    max_depth = np.max(depth_texture)
-    for material in material_data.materials:
+    adjusted_depth = depth_texture.copy()
+    # max_depth = np.max(depth_texture)
+    for i, material in enumerate(material_data.materials):
         if material.opacity < 1.0:
             logger.warning("material %s is translucent", material.name)
-            blended_depth = depth_texture * material.opacity + max_depth * (1 - material.opacity)
-            depth_texture = np.where(index_texture == material.color, blended_depth, depth_texture)
+            material_match = index_texture == (i + 1)
+            blended_depth = (
+                adjusted_depth * material.opacity
+            )  # + max_depth * (1 - material.opacity)
+            adjusted_depth = np.where(material_match, blended_depth, adjusted_depth)
 
-    return projected_texture, index_texture, depth_texture
+    save_numpy_image(adjusted_depth, f"adjusted_depth{file_suffix}.png")
+
+    return projected_texture, index_texture, adjusted_depth
 
 
 def project_diffusion(
@@ -1849,11 +1855,18 @@ def main():
             file_suffix=f"-{diffusion_index}",
         )
         logger.warning("diffusion complete")
+
+        updated_voxels = update_projected_latents(hit_map, world_volume, diffusion_data)
+        logger.info("updated voxels: %s", updated_voxels.shape)
+
         diffusion_index += 1
         next_diffusion_texture = o3d.geometry.Image(np.asarray(diffusion_data.image))
         next_projected_texture = o3d.geometry.Image(projected)
 
     def on_preview(vis):
+        nonlocal next_diffusion_texture
+        nonlocal next_projected_texture
+
         camera_data = CameraData(mesh_vis, scene)
         raycast_data = on_recast(camera_data, profile)
         projected, index, depth = update_textures(
@@ -1865,8 +1878,13 @@ def main():
         )
         render_data = RenderData(index=index, depth=depth)
         logger.warning("running preview")
-        preview(sd, profile, render_data, world_volume, raycast_data, material_data)
+        diffusion_data = preview(
+            sd, profile, render_data, world_volume, raycast_data, material_data
+        )
         logger.warning("preview complete")
+
+        next_diffusion_texture = o3d.geometry.Image(np.asarray(diffusion_data.image))
+        next_projected_texture = o3d.geometry.Image(projected)
 
     def on_splat(vis):
         logger.warning("running splat")

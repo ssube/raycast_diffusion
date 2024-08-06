@@ -81,6 +81,10 @@ class AddMaterial:
                 "prompt": ("STRING", {}),
                 "color": ("FLOAT3", {}),
                 "height": ("INT", {"default": 10, "min": 1, "max": 100, "step": 1}),
+                "opacity": (
+                    "FLOAT",
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
+                ),
             },
             "optional": {
                 "render_color": ("FLOAT3", {}),
@@ -107,6 +111,7 @@ class AddMaterial:
         prompt,
         color,
         height,
+        opacity,
         render_color=None,
         start_height=0,
         material_over=None,
@@ -117,6 +122,7 @@ class AddMaterial:
             color,
             prompt,
             height,
+            opacity,
             render_color or color,
             None,
             start_height,
