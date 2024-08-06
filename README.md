@@ -13,11 +13,11 @@ Cyberpunk | Miniature City
 It happens to work well for visualizing 3D scenes, including architectural visualization and integrating logos and
 designs into a larger scene, vaguely similar to the effect produced by the QR code ControlNet.
 
-![blue hexagon logo with modern architecture](https://demo.raycast-diffusion.com/raycast-logo.png)
+![blue hexagon logo with modern architecture](https://demo.raycast-diffusion.com/raycast-logo-small.png)
 
 ![scene and depth mask](https://demo.raycast-diffusion.com/raycast-scene.png)
 
-![cloud formation transforming into rabbit in front of miniature cityscape](https://demo.raycast-diffusion.com/raycast-bunny.png)
+![cloud formation transforming into rabbit in front of miniature cityscape](https://demo.raycast-diffusion.com/raycast-bunny-small.png)
 
 ## Setup
 
