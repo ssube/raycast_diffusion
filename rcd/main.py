@@ -192,6 +192,7 @@ class MaterialData:
     source: Tuple[int, int, int]
     prompt: str
     height: int
+    opacity: float = 1.0
     display: Tuple[int, int, int] | None = None
     negative_prompt: str | None = None
     start_height: int | None = None
@@ -569,7 +570,7 @@ def make_world(
     source_texture: np.ndarray,
     ceiling_material: str | None = None,
     floor_material: str | None = None,
-    voxel_multiplier: int = 1,
+    voxel_multiplier: int = 4,
 ) -> WorldVolume:
     """
     Create a 3D voxel grid from the source texture and assign materials based on the material data.
@@ -1542,14 +1543,9 @@ def save_numpy_image(image: np.ndarray, filename: str):
 
 
 def update_textures(
-    material_data: MaterialData,
-    # ray_points: np.ndarray,
-    # ray_depth: np.ndarray,
+    material_data: MaterialFile,
     raycast: RaycastData,
-    # world_voxels: np.ndarray,
     world: WorldVolume,
-    # height: int,
-    # width: int,
     profile: ProfileData,
     file_suffix: str = "",
 ):
@@ -1567,6 +1563,14 @@ def update_textures(
 
     index_texture = make_projected_index_texture(hit_map, world)
     save_numpy_image(index_texture, f"index{file_suffix}.png")
+
+    # adjust depth for translucent and transparent materials
+    max_depth = np.max(depth_texture)
+    for material in material_data.materials:
+        if material.opacity < 1.0:
+            logger.warning("material %s is translucent", material.name)
+            blended_depth = depth_texture * material.opacity + max_depth * (1 - material.opacity)
+            depth_texture = np.where(index_texture == material.color, blended_depth, depth_texture)
 
     return projected_texture, index_texture, depth_texture
 
@@ -1587,7 +1591,7 @@ def project_diffusion(
 # region: Main
 def main_load_metadata(
     args,
-) -> Tuple[MaterialData, ProfileData, np.ndarray, ProfileData]:
+) -> Tuple[MaterialFile, ProfileFile, np.ndarray, ProfileData]:
     material_data = load_material_data(args.material_data)
     profile_data = load_profile_data(args.profile_data)
     source_texture = load_source_texture(args.source_texture)
