@@ -100,10 +100,16 @@ class ShowNumpyImage:
         self.compress_level = 4
 
     def show_numpy_image(self, image):
-        # convert to PIL
+        print("showing numpy image", image.shape, np.max(image), np.min(image))
+
         if np.max(image) <= 1.0:
             image = image * 255.0
 
+        # if last dimension is 1, remove it
+        if image.shape[-1] == 1:
+            image = image.squeeze(2)
+
+        # convert to PIL
         image = image.astype(np.uint8)
         pil_image = Image.fromarray(image)
 

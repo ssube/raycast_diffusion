@@ -81,10 +81,6 @@ class AddMaterial:
                 "prompt": ("STRING", {}),
                 "color": ("FLOAT3", {}),
                 "height": ("INT", {"default": 10, "min": 1, "max": 100, "step": 1}),
-                "opacity": (
-                    "FLOAT",
-                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
-                ),
             },
             "optional": {
                 "render_color": ("FLOAT3", {}),
@@ -94,6 +90,10 @@ class AddMaterial:
                 ),
                 "material_over": ("STRING", {}),
                 "material_under": ("STRING", {}),
+                "opacity": (
+                    "FLOAT",
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
+                ),
             },
         }
 
@@ -111,7 +111,7 @@ class AddMaterial:
         prompt,
         color,
         height,
-        opacity,
+        opacity=1.0,
         render_color=None,
         start_height=0,
         material_over=None,

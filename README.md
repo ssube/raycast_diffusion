@@ -15,6 +15,8 @@ designs into a larger scene, vaguely similar to the effect produced by the QR co
 
 ![blue hexagon logo with modern architecture](https://demo.raycast-diffusion.com/raycast-logo.png)
 
+![scene and depth mask](https://demo.raycast-diffusion.com/raycast-scene.png)
+
 ![cloud formation transforming into rabbit in front of miniature cityscape](https://demo.raycast-diffusion.com/raycast-bunny.png)
 
 ## Setup
